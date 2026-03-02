@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SaludPlus CRUD</title>
+</head>
+<body>
+    <h1>SaludPlus Doctors CRUD</h1>
+    
+    <h2>Create Doctor</h2>
+    <form id="createForm">
+        <input type="text" id="cName" placeholder="Name" required>
+        <input type="email" id="cEmail" placeholder="Email" required>
+        <input type="text" id="cSpec" placeholder="Specialty" required>
+        <button type="submit">Create</button>
+    </form>
+
+    <h2>Doctors List</h2>
+    <ul id="doctorsList"></ul>
+
+    <h2>Update/Delete Doctor</h2>
+    <form id="updateForm">
+        <input type="number" id="uId" placeholder="Doctor ID" required>
+        <input type="text" id="uName" placeholder="New Name">
+        <input type="email" id="uEmail" placeholder="New Email">
+        <input type="text" id="uSpec" placeholder="New Specialty">
+        <button type="submit">Update</button>
+        <button type="button" onclick="deleteDoctor()">Delete</button>
+    </form>
+
+    <script>
+        const API = 'http://localhost:3000/api/doctors';
+
+        async function fetchDoctors() {
+            const res = await fetch(API);
+            const docs = await res.json();
+            const list = document.getElementById('doctorsList');
+            list.innerHTML = '';
+            docs.forEach(d => {
+                const li = document.createElement('li');
+                li.textContent = `ID: ${d.id} | ${d.name} | ${d.email} | ${d.specialty}`;
+                list.appendChild(li);
+            });
+        }
+
+        document.getElementById('createForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('cName').value,
+                    email: document.getElementById('cEmail').value,
+                    specialty: document.getElementById('cSpec').value
+                })
+            });
+            fetchDoctors();
+        });
+
+        document.getElementById('updateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('uId').value;
+            await fetch(`${API}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('uName').value,
+                    email: document.getElementById('uEmail').value,
+                    specialty: document.getElementById('uSpec').value
+                })
+            });
+            fetchDoctors();
+        });
+
+        async function deleteDoctor() {
+            const id = document.getElementById('uId').value;
+            if(!id) return alert('Enter ID to delete');
+            await fetch(`${API}/${id}`, { method: 'DELETE' });
+            fetchDoctors();
+        }
+
+        fetchDoctors();
+    </script>
+</body>
+</html>
